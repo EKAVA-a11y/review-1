@@ -1,0 +1,215 @@
+import java.util.*;
+public class EventManagementSystem {
+    static class User {
+        int id;
+        String name, email, password, role; 
+        User(int id, String name, String email, String password, String role) {
+            this.id = id;
+            this.name = name;
+            this.email = email;
+            this.password = password;
+            this.role = role;
+        }
+    }
+    static class Event {
+        int eventId;
+        String title, description, location;
+        String date;
+        int organizerId;
+        int capacity;
+        Event(int eventId, String title, String description, String location, 
+              String date, int organizerId, int capacity) {
+            this.eventId = eventId;
+            this.title = title;
+            this.description = description;
+            this.location = location;
+            this.date = date;
+            this.organizerId = organizerId;
+            this.capacity = capacity;
+        }
+    }
+    static class Registration {
+        int regId, eventId, userId;
+        Registration(int regId, int eventId, int userId) {
+            this.regId = regId;
+            this.eventId = eventId;
+            this.userId = userId;
+        }
+    }
+    static class Database {
+        static List<User> users = new ArrayList<>();
+        static List<Event> events = new ArrayList<>();
+        static List<Registration> registrations = new ArrayList<>();
+
+        static int userAutoId = 1;
+        static int eventAutoId = 1;
+        static int regAutoId = 1;
+
+        static {
+            users.add(new User(userAutoId++, "Admin", "admin@gmail.com", "admin", "ADMIN"));
+        }
+    }
+
+    static Scanner sc = new Scanner(System.in);
+    static void register() {
+        System.out.print("Enter Name: ");
+        String name = sc.nextLine();
+
+        System.out.print("Enter Email: ");
+        String email = sc.nextLine();
+
+        System.out.print("Enter Password: ");
+        String pass = sc.nextLine();
+
+        System.out.print("Role (USER/ORGANIZER): ");
+        String role = sc.nextLine().toUpperCase();
+
+        Database.users.add(new User(Database.userAutoId++, name, email, pass, role));
+        System.out.println("Registration Successful!\n");
+    }
+    static User login() {
+        System.out.print("Email: ");
+        String email = sc.nextLine();
+
+        System.out.print("Password: ");
+        String pass = sc.nextLine();
+
+        for (User u : Database.users) {
+            if (u.email.equals(email) && u.password.equals(pass)) {
+                System.out.println("Login Successful!\n");
+                return u;
+            }
+        }
+        System.out.println("Invalid Credentials!\n");
+        return null;
+    }
+    static void createEvent(User user) {
+        System.out.print("Event Title: ");
+        String t = sc.nextLine();
+
+        System.out.print("Description: ");
+        String d = sc.nextLine();
+
+        System.out.print("Location: ");
+        String loc = sc.nextLine();
+
+        System.out.print("Date: ");
+        String date = sc.nextLine();
+
+        System.out.print("Capacity: ");
+        int cap = Integer.parseInt(sc.nextLine());
+
+        Database.events.add(new Event(Database.eventAutoId++, t, d, loc, date, user.id, cap));
+
+        System.out.println("Event Created Successfully!\n");
+    }
+    static void listEvents() {
+        System.out.println("\n EVENTS ");
+        for (Event e : Database.events) {
+            System.out.println("ID: " + e.eventId +
+                    " | Title: " + e.title +
+                    " | Location: " + e.location +
+                    " | Date: " + e.date +
+                    " | Capacity: " + e.capacity);
+        }
+        System.out.println();
+    }
+    static void registerEvent(User user) {
+        listEvents();
+
+        System.out.print("Enter Event ID to join: ");
+        int id = Integer.parseInt(sc.nextLine());
+
+        for (Event e : Database.events) {
+            if (e.eventId == id) {
+                Database.registrations.add(
+                    new Registration(Database.regAutoId++, e.eventId, user.id)
+                );
+                System.out.println("Successfully Registered for Event!\n");
+                return;
+            }
+        }
+
+        System.out.println("Invalid Event ID!\n");
+    }
+    static void viewAllUsers() {
+        System.out.println("\n USERS ");
+        for (User u : Database.users) {
+            System.out.println("ID: " + u.id + " | " + u.name + " | " + u.email + " | Role: " + u.role);
+        }
+        System.out.println();
+    }
+    public static void main(String[] args) {
+
+        while (true) {
+            System.out.println("ONLINE EVENT MANAGEMENT SYSTEM");
+            System.out.println("1. Register");
+            System.out.println("2. Login");
+            System.out.println("3. Exit");
+            System.out.print("Choose: ");
+
+            int ch = Integer.parseInt(sc.nextLine());
+
+            if (ch == 1) {
+                register();
+            } 
+            else if (ch == 2) {
+                User logged = login();
+                if (logged == null) continue;
+
+                if (logged.role.equals("ADMIN")) {
+                    while (true) {
+                        System.out.println("ADMIN MENU");
+                        System.out.println("1. View All Users");
+                        System.out.println("2. View All Events");
+                        System.out.println("3. Logout");
+                        System.out.print("Choose: ");
+
+                        int a = Integer.parseInt(sc.nextLine());
+
+                        if (a == 1) viewAllUsers();
+                        else if (a == 2) listEvents();
+                        else break;
+                    }
+                }
+
+                else if (logged.role.equals("ORGANIZER")) {
+                    while (true) {
+                        System.out.println("ORGANIZER MENU ");
+                        System.out.println("1. Create Event");
+                        System.out.println("2. View Events");
+                        System.out.println("3. Logout");
+                        System.out.print("Choose: ");
+
+                        int o = Integer.parseInt(sc.nextLine());
+
+                        if (o == 1) createEvent(logged);
+                        else if (o == 2) listEvents();
+                        else break;
+                    }
+                }
+
+                else {
+                    while (true) {
+                        System.out.println(" USER MENU ");
+                        System.out.println("1. View Events");
+                        System.out.println("2. Register for Event");
+                        System.out.println("3. Logout");
+                        System.out.print("Choose: ");
+
+                        int u = Integer.parseInt(sc.nextLine());
+
+                        if (u == 1) listEvents();
+                        else if (u == 2) registerEvent(logged);
+                        else break;
+                    }
+                }
+
+            } 
+            else {
+                System.out.println("Thank you!");
+                break;
+            }
+        }
+    }
+}
